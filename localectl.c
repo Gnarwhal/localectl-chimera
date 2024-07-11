@@ -4,10 +4,26 @@
 #define PROJECT_NAME "localectl"
 
 int main(int argc, char **argv) {
-	if(argc != 1) {
-		printf("%s takes no arguments.\n", argv[0]);
+	/* --- Setup DBus Proxy --- */
+	LocalectlLocale1 *proxy = NULL;
+	GError *error = NULL;
+
+	proxy = localectl_locale1_proxy_new_for_bus_sync(
+		G_BUS_TYPE_SESSION,
+		G_DBUS_PROXY_FLAGS_NONE,
+		"org.freedesktop",
+		"/org/freedesktop/locale1",
+		NULL,
+		&error
+	);
+
+	if (error) {
+		fprintf(stderr, "%s", error->message);
+		g_error_free(error);
 		return 1;
 	}
-	printf("This is project %s.\n", PROJECT_NAME);
+
+	g_object_unref(proxy);
+
 	return 0;
 }
