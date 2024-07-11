@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include "org.freedesktop.locale1.h"
 
+#include "command.h"
+#include "parse_args.h"
+
 #define PROJECT_NAME "localectl"
 
 int main(int argc, char **argv) {
@@ -21,6 +24,27 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "%s", error->message);
 		g_error_free(error);
 		return 1;
+	}
+
+	/* --- Dispatch Command --- */
+	struct Command command;
+	if (parse_args(argc, argv, &command) != 0) {
+		fprintf(stderr, "%s", command.error);
+		return 1;
+	}
+
+	switch (command.type) {
+		case COMMAND_STATUS:
+			command_status();
+			break;
+
+		case COMMAND_HELP:
+			command_help();
+			break;
+
+		case COMMAND_VERSION:
+			command_version();
+			break;
 	}
 
 	g_object_unref(proxy);
