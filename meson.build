@@ -1,7 +1,7 @@
 project(
   'localectl',
   'c',
-  version: '0.1.0',
+  version: '1.0.0',
   license: 'GPL-3.0-or-later',
   license_files: './LICENSE',
   default_options: ['warning_level=3'],
