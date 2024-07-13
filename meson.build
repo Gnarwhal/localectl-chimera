@@ -19,8 +19,6 @@ gio = dependency('gio-2.0')
 
 gnome = import('gnome')
 
-run_command('generate_introspection.sh', check: true)
-
 gdbus = gnome.gdbus_codegen(
   'locale1',
   sources:          'org.freedesktop.locale1.xml',
