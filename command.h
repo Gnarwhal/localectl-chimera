@@ -8,6 +8,7 @@
 void command_status(LocalectlLocale1 *proxy);
 void command_set_locale(LocalectlLocale1 *proxy, char **locales, bool ask_password);
 void command_list_locales(void);
+void command_list_keymaps(void);
 void command_help(void);
 void command_version(void);
 

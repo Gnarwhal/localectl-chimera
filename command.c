@@ -1,6 +1,7 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -29,12 +30,12 @@ int for_directory(const char *dir_path, bool recurse, void (*callback)(const cha
 
 	struct dirent *dir_entry;
 	while ((dir_entry = readdir(dir))) {
-		if (recurse) {
+		if (recurse && strcmp(dir_entry->d_name, ".") != 0 && strcmp(dir_entry->d_name, "..")) {
 			// A directory path would never be longer than 512 characters :)
 			char subdir_path[512];
 			snprintf(subdir_path, 512, "%s/%s", dir_path, dir_entry->d_name);
 			struct stat path_stat;
-			if (stat(subdir_path, &path_stat) == 0) {
+			if (stat(subdir_path, &path_stat) != 0) {
 				fprintf(stderr, "Failed to read directory entry: %s\n", subdir_path);
 			} else if (S_ISDIR(path_stat.st_mode)) {
 				for_directory(subdir_path, true, callback);
@@ -129,7 +130,7 @@ void command_set_locale(LocalectlLocale1 *proxy, char **locales, bool ask_passwo
 }
 
 void print_locale(const char *file_name) {
-	/* --- systemd filters out non utf8 locales. as such so shall we --- */
+	/* --- systemd filters out non utf8 locales. As such, so shall we --- */
 	if (postfix_is(file_name, ".UTF-8")) {
 		printf("%s\n", file_name);
 	}
@@ -138,6 +139,22 @@ void print_locale(const char *file_name) {
 void command_list_locales(void) {
 	static const char *LOCALE_DIRECTORY = "/usr/share/locale";
 	for_directory(LOCALE_DIRECTORY, false, print_locale);
+}
+
+void print_keymap(const char *file_name) {
+	char stripped_file_name[128];
+	if (postfix_is(file_name, ".map")) {
+		snprintf(stripped_file_name, MIN(strlen(file_name) - 3, 128), "%s", file_name);
+		printf("%s\n", stripped_file_name);
+	} else if (postfix_is(file_name, ".map.gz")) {
+		snprintf(stripped_file_name, MIN(strlen(file_name) - 6, 128), "%s", file_name);
+		printf("%s\n", stripped_file_name);
+	}
+}
+
+void command_list_keymaps(void) {
+	static const char *KEYMAP_DIRECTORY = "/usr/share/keymaps";
+	for_directory(KEYMAP_DIRECTORY, true, print_keymap);
 }
 
 void command_help(void) {

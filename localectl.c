@@ -117,6 +117,7 @@ int main(int argc, char **argv) {
 	       if (strcmp("status",       command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_status(proxy);
 	} else if (strcmp("set-locale",   command_name) == 0) { if (!verify_arg_count(argc, 1, ANY_AMOUNT_ARG)) { return 1; } command_set_locale(proxy, argv, arg_ask_password);
 	} else if (strcmp("list-locales", command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_locales();
+	} else if (strcmp("list-keymaps", command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_keymaps();
 	} else {
 		fprintf(stderr, ANSI_ESCAPE(ANSI_RED";"ANSI_HIGHLIGHT) "Unknown operation %s." ANSI_ESCAPE(ANSI_RESET) "\n", command_name);
 		return 1;
