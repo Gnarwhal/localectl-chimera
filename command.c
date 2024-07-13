@@ -1,10 +1,54 @@
+#include <dirent.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "ansi_codes.h"
-#include "glib.h"
 #include "version.h"
 
 #include "command.h"
+
+bool postfix_is(const char *str, const char *postfix) {
+	int str_length    = strlen(str);
+	int postfix_length = strlen(postfix);
+
+	if (str_length < postfix_length) {
+		return false;
+	}
+
+	return strcmp(str + str_length - postfix_length, postfix) == 0;
+}
+
+int for_directory(const char *dir_path, bool recurse, void (*callback)(const char *file_path)) {
+	DIR *dir = opendir(dir_path);
+	if (!dir) {
+		fprintf(stderr, "Failed to open dir: %s\n", dir_path);
+		return 1;
+	}
+
+	struct dirent *dir_entry;
+	while ((dir_entry = readdir(dir))) {
+		if (recurse) {
+			// A directory path would never be longer than 512 characters :)
+			char subdir_path[512];
+			snprintf(subdir_path, 512, "%s/%s", dir_path, dir_entry->d_name);
+			struct stat path_stat;
+			if (stat(subdir_path, &path_stat) == 0) {
+				fprintf(stderr, "Failed to read directory entry: %s\n", subdir_path);
+			} else if (S_ISDIR(path_stat.st_mode)) {
+				for_directory(subdir_path, true, callback);
+			} else {
+				callback(dir_entry->d_name);
+			}
+		} else {
+			callback(dir_entry->d_name);
+		}
+	}
+	
+	closedir(dir);
+	return 0;
+}
 
 void command_status(LocalectlLocale1 *proxy) {
 	const char *const *locale = localectl_locale1_get_locale(proxy);
@@ -59,7 +103,7 @@ void command_set_locale(LocalectlLocale1 *proxy, char **locales, bool ask_passwo
 
 	// If only given a single arg and it isn't already 'LANG=??', set it to LANG=${arg}
 	if (locales[1] == NULL && strncmp("LANG=", locales[0], strlen("LANG="))) {
-		sprintf(lang, "LANG=%s", locales[0]);
+		snprintf(lang, 32, "LANG=%s", locales[0]);
 		locales[0] = lang;
 	}
 	localectl_locale1_call_set_locale_sync(
@@ -82,6 +126,18 @@ void command_set_locale(LocalectlLocale1 *proxy, char **locales, bool ask_passwo
 		g_error_free(error);
 		exit(1);
 	}
+}
+
+void print_locale(const char *file_name) {
+	/* --- systemd filters out non utf8 locales. as such so shall we --- */
+	if (postfix_is(file_name, ".UTF-8")) {
+		printf("%s\n", file_name);
+	}
+}
+
+void command_list_locales(void) {
+	static const char *LOCALE_DIRECTORY = "/usr/share/locale";
+	for_directory(LOCALE_DIRECTORY, false, print_locale);
 }
 
 void command_help(void) {
