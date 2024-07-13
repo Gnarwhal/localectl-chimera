@@ -32,7 +32,6 @@ executable(
   'localectl',
   'localectl.c',
   'command.c',
-  'parse_args.c',
   gdbus,
   dependencies: [
     gio,

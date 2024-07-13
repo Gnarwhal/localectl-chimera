@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <time.h>
 
 #include "ansi_codes.h"
 #include "glib.h"
@@ -54,26 +53,31 @@ void command_status(LocalectlLocale1 *proxy) {
 	);
 }
 
-void command_set_locale(LocalectlLocale1 *proxy, struct CommandSetLocale *set_locale) {
+void command_set_locale(LocalectlLocale1 *proxy, char **locales, bool ask_password) {
 	char lang[32];
 	GError *error = NULL;
 
 	// If only given a single arg and it isn't already 'LANG=??', set it to LANG=${arg}
-	if (set_locale->locales[1] == NULL && strncmp("LANG=", set_locale->locales[0], strlen("LANG="))) {
-		sprintf(lang, "LANG=%s", set_locale->locales[0]);
-		set_locale->locales[0] = lang;
+	if (locales[1] == NULL && strncmp("LANG=", locales[0], strlen("LANG="))) {
+		sprintf(lang, "LANG=%s", locales[0]);
+		locales[0] = lang;
 	}
 	localectl_locale1_call_set_locale_sync(
 		proxy,
-		set_locale->locales,
-		set_locale->ask_password,
+		locales,
+		ask_password,
 		NULL,
 		&error
 	);
 	
 
 	if (error) {
-		fprintf(stderr, "Error setting locale: %s\n", error->message);
+		if (error->code == 16) {
+			fprintf(stderr, ANSI_ESCAPE(ANSI_RED";"ANSI_HIGHLIGHT)"Failed to issue method call: Invalid Locale data."ANSI_ESCAPE(ANSI_RESET)"\n");
+		} else {
+			// Not sure what other errors it can give, but they're handled if they happen
+			fprintf(stderr, "Error setting locale: %s\n", error->message);
+		}
 		g_object_unref(proxy);
 		g_error_free(error);
 		exit(1);
