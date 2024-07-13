@@ -101,7 +101,14 @@ void command_status(LocalectlLocale1 *proxy) {
 }
 
 void command_set_locale(LocalectlLocale1 *proxy, char **locales, bool ask_password) {
+	char lang[32];
 	GError *error = NULL;
+
+	// Please don't try and `localectl set-locale haha=yourprogramisrubbish` and then tell me as such when it doesn't like that. I'm already aware ;-;
+	if (locales[1] == NULL && strstr(locales[0], "=") == NULL) {
+		snprintf(lang, 32, "LANG=%s", locales[0]);
+		locales[0] = lang;
+	}
 
 	localectl_locale1_call_set_locale_sync(
 		proxy,
@@ -125,16 +132,42 @@ void command_set_locale(LocalectlLocale1 *proxy, char **locales, bool ask_passwo
 	}
 }
 
-void print_locale(const char *file_name) {
-	/* --- systemd filters out non utf8 locales. As such, so shall we --- */
-	if (postfix_is(file_name, ".UTF-8")) {
-		printf("%s\n", file_name);
-	}
-}
+// Instead of reading /usr/share/locale, just print the locales included in musl-locale
+// But just in case we think otherwise in the future...
+//
+// void print_locale(const char *file_name) {
+// 	/* --- systemd filters out non utf8 locales. As such, so shall we --- */
+// 	if (postfix_is(file_name, ".UTF-8")) {
+// 		printf("%s\n", file_name);
+// 	}
+// }
+
+// void command_list_locales(void) {
+// 	static const char *LOCALE_DIRECTORY = "/usr/share/locale";
+// 	print_locale("C.UTF-8");
+// 	for_directory(LOCALE_DIRECTORY, false, print_locale);
+// }
 
 void command_list_locales(void) {
-	static const char *LOCALE_DIRECTORY = "/usr/share/locale";
-	for_directory(LOCALE_DIRECTORY, false, print_locale);
+	// I hope I got all the inbuilt locales ¯\_(ツ)_/¯
+	printf(
+		"C\n"
+		"C.UTF-8\n"
+		"cs_CZ\n"
+		"de_DE\n"
+		"en_GB\n"
+		"es_ES\n"
+		"fi_FI\n"
+		"fr_FR\n"
+		"it_IT\n"
+		"nb_NO\n"
+		"nl_NL\n"
+		"pt_BR\n"
+		"pt_PT\n"
+		"ru_RU\n"
+		"sr_RS\n"
+		"sv_SE\n"
+	);
 }
 
 void command_set_keymap(LocalectlLocale1 *proxy, const char *keymap, const char *toggle, /* bool convert, */ bool ask_password) {
