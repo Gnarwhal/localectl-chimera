@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
 	       if (strcmp("status",                   command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_status(proxy);
 	} else if (strcmp("set-locale",               command_name) == 0) { if (!verify_arg_count(argc, 1, ANY_AMOUNT_ARG)) { return 1; } command_set_locale(proxy, argv + 1, arg_ask_password);
 	} else if (strcmp("list-locales",             command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_locales();
-	} else if (strcmp("set-keymap",               command_name) == 0) { if (!verify_arg_count(argc, 1, 2             )) { return 1; } command_set_keymap(proxy, argv[1], argv[2], /* arg_convert, */ arg_ask_password);
+	} else if (strcmp("set-keymap",               command_name) == 0) { if (!verify_arg_count(argc, 1, 1             )) { return 1; } command_set_keymap(proxy, argv[1], /* arg_convert, */ arg_ask_password);
 	} else if (strcmp("list-keymaps",             command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_keymaps();
 	} else if (strcmp("set-x11-keymap",           command_name) == 0) { if (!verify_arg_count(argc, 1, 4             )) { return 1; } command_set_x11_keymap(
 	                                                                                                                                      proxy,

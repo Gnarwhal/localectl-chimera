@@ -55,48 +55,36 @@ int for_directory(const char *dir_path, bool recurse, void (*callback)(const cha
 
 void command_status(LocalectlLocale1 *proxy) {
 	const char *const *locale = localectl_locale1_get_locale(proxy);
-	const char *status_lang     = locale[0];
-	const char *status_language = locale[1];
+	printf("   System Locale: %s\n", locale[0] ? locale[0] : "LANG=");
+	if (locale[0]) {
+		for (int i = 1; locale[i]; ++i) {
+			printf("                  %s\n", locale[i]);
+		}
+	}
 
-	const char *status[] = {
-		status_lang,
-		status_language,
+	const char *rest_of_status[] = {
 		localectl_locale1_get_vconsole_keymap(proxy),
-		localectl_locale1_get_vconsole_keymap_toggle(proxy),
 		localectl_locale1_get_x11_layout(proxy),
 		localectl_locale1_get_x11_model(proxy),
 		localectl_locale1_get_x11_variant(proxy)
 	};
 
-	static const int STATUS_LENGTH = 7;
+	static const int STATUS_LENGTH = sizeof(rest_of_status) / sizeof(const char *);
 	for (int i = 0; i < STATUS_LENGTH; ++i) {
-		if (status[i] == NULL) {
-			switch (i) {
-				case  0: status[i] = "LANG=";     break;
-				case  1: status[i] = "LANGUAGE="; break;
-				default: status[i] = "";          break;
-			}
+		if (rest_of_status[i] == NULL) {
+			rest_of_status[i] = "";
 		}
 	}
 	
 	printf(
-		"   System Locale: %s\n"
-		"                  %s\n"
-		"       VC Keymap: %s\n",
-		status[0],
-		status[1],
-		status[2]
-	);
-	if (strcmp(status[3], "") != 0) {
-		printf("VC Toggle Keymap: %s\n", status[3]);
-	}
-	printf(
+		"       VC Keymap: %s\n"
 		"      X11 Layout: %s\n"
 		"       X11 Model: %s\n"
 		"     X11 Variant: %s\n",
-		status[4],
-		status[5],
-		status[6]
+		rest_of_status[0],
+		rest_of_status[1],
+		rest_of_status[2],
+		rest_of_status[3]
 	);
 }
 
@@ -170,20 +158,19 @@ void command_list_locales(void) {
 	);
 }
 
-void command_set_keymap(LocalectlLocale1 *proxy, const char *keymap, const char *toggle, /* bool convert, */ bool ask_password) {
+void command_set_keymap(LocalectlLocale1 *proxy, const char *keymap, /* bool convert, */ bool ask_password) {
 	GError *error = NULL;
-	
+
 	localectl_locale1_call_set_vconsole_keyboard_sync(
 		proxy,
 		keymap,
-		toggle ? toggle : "",
+		"",
 		//convert,
 		false,
 		ask_password,
 		NULL,
 		&error
 	);
-	
 
 	if (error) {
 		fprintf(stderr, "Error setting keymap | %s\n", error->message);
