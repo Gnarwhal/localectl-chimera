@@ -119,21 +119,25 @@ int main(int argc, char **argv) {
 
 	const char *command_name = argv[0];
 
-	       if (strcmp("status",         command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_status(proxy);
-	} else if (strcmp("set-locale",     command_name) == 0) { if (!verify_arg_count(argc, 1, ANY_AMOUNT_ARG)) { return 1; } command_set_locale(proxy, argv + 1, arg_ask_password);
-	} else if (strcmp("list-locales",   command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_locales();
-	} else if (strcmp("set-keymap",     command_name) == 0) { if (!verify_arg_count(argc, 1, 2             )) { return 1; } command_set_keymap(proxy, argv[1], argv[2], /* arg_convert, */ arg_ask_password);
-	} else if (strcmp("list-keymaps",   command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_keymaps();
-	} else if (strcmp("set-x11-keymap", command_name) == 0) { if (!verify_arg_count(argc, 1, 4             )) { return 1; } command_set_x11_keymap(
-	                                                                                                                        	proxy,
-	                                                                                                                        	argv[1], 
-	                                                                                                                        	argc >= 2 ? argv[2] : "",
-	                                                                                                                        	argc >= 3 ? argv[3] : "",
-	                                                                                                                        	argc >= 4 ? argv[4] : "",
-	                                                                                                                        	// arg_convert,
-	                                                                                                                        	arg_ask_password
-	                                                                                                                        );
-	} else if (strcmp("help",           command_name) == 0) {                                                               command_help();
+	       if (strcmp("status",                   command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_status(proxy);
+	} else if (strcmp("set-locale",               command_name) == 0) { if (!verify_arg_count(argc, 1, ANY_AMOUNT_ARG)) { return 1; } command_set_locale(proxy, argv + 1, arg_ask_password);
+	} else if (strcmp("list-locales",             command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_locales();
+	} else if (strcmp("set-keymap",               command_name) == 0) { if (!verify_arg_count(argc, 1, 2             )) { return 1; } command_set_keymap(proxy, argv[1], argv[2], /* arg_convert, */ arg_ask_password);
+	} else if (strcmp("list-keymaps",             command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_keymaps();
+	} else if (strcmp("set-x11-keymap",           command_name) == 0) { if (!verify_arg_count(argc, 1, 4             )) { return 1; } command_set_x11_keymap(
+	                                                                                                                                      proxy,
+	                                                                                                                                      argv[1], 
+	                                                                                                                                      argc >= 2 ? argv[2] : "",
+	                                                                                                                                      argc >= 3 ? argv[3] : "",
+	                                                                                                                                      argc >= 4 ? argv[4] : "",
+	                                                                                                                                      // arg_convert,
+	                                                                                                                                      arg_ask_password
+	                                                                                                                                  );
+	} else if (strcmp("list-x11-keymap-models",   command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_x11_keymap_models();
+	} else if (strcmp("list-x11-keymap-layouts",  command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_x11_keymap_layouts();
+	} else if (strcmp("list-x11-keymap-variants", command_name) == 0) { if (!verify_arg_count(argc, 0, 1             )) { return 1; } command_list_x11_keymap_variants(argv[1]);
+	} else if (strcmp("list-x11-keymap-options",  command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_x11_keymap_options();
+	} else if (strcmp("help",                     command_name) == 0) {                                                               command_help();
 	} else {
 		fprintf(stderr, ANSI_ESCAPE(ANSI_RED";"ANSI_HIGHLIGHT) "Unknown operation %s." ANSI_ESCAPE(ANSI_RESET) "\n", command_name);
 		return 1;

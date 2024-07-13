@@ -11,6 +11,10 @@ void command_list_locales(void);
 void command_set_keymap(LocalectlLocale1 *proxy, const char *keymap, const char *toggle, /* bool convert, */ bool ask_password);
 void command_list_keymaps(void);
 void command_set_x11_keymap(LocalectlLocale1 *proxy, const char *layout, const char *model, const char *variant, const char *options, /* bool convert, */ bool ask_password);
+void command_list_x11_keymap_models(void);
+void command_list_x11_keymap_layouts(void);
+void command_list_x11_keymap_variants(const char *layout);
+void command_list_x11_keymap_options(void);
 void command_help(void);
 void command_version(void);
 

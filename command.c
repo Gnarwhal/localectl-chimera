@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
@@ -178,8 +179,6 @@ void command_list_keymaps(void) {
 void command_set_x11_keymap(LocalectlLocale1 *proxy, const char *layout, const char *model, const char *variant, const char *options, /* bool convert, */ bool ask_password) {
 	GError *error = NULL;
 
-	printf("%s;%s;%s;%s\n", layout, model, variant, options);
-	
 	localectl_locale1_call_set_x11_keyboard_sync(
 		proxy,
 		layout,
@@ -200,6 +199,61 @@ void command_set_x11_keymap(LocalectlLocale1 *proxy, const char *layout, const c
 		g_error_free(error);
 		exit(1);
 	}
+}
+
+bool is_empty(const char *str) {
+	while (*str) {
+		if (!isspace(*str)) {
+			return false;
+		}
+		++str;
+	}
+	return true;
+}
+
+void list_x11(const char *type, const char *layout) {
+	static const char *X11_KEYMAP_BASE_LIST = "/usr/share/X11/xkb/rules/base.lst";
+
+	FILE *list = fopen(X11_KEYMAP_BASE_LIST, "r");
+
+	if (!list) {
+		fprintf(stderr, "Error reading x11 base file list");
+	}
+
+	char filter[32];
+	if (layout != NULL) {
+		snprintf(filter, 32, " %s:", layout);
+	}
+
+	char line[128];
+	bool in_correct_section = false;
+	while (fgets(line, 128, list)) {
+		if (!is_empty(line)) {
+			if (line[0] == '!') {
+				in_correct_section = strncmp(line + 2, type, strlen(type)) == 0;
+			} else if (in_correct_section) {
+				if (!layout || strstr(line + 2, filter)) {
+					printf("%s", line + 2);
+				}
+			}
+		}
+	}
+}
+
+void command_list_x11_keymap_models(void) {
+	list_x11("model", NULL);
+}
+
+void command_list_x11_keymap_layouts(void) {
+	list_x11("layout", NULL);
+}
+
+void command_list_x11_keymap_variants(const char *layout) {
+	list_x11("variant", layout);
+}
+
+void command_list_x11_keymap_options(void) {
+	list_x11("option", NULL);
 }
 
 void command_help(void) {
