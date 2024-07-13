@@ -1,16 +1,30 @@
 #include <assert.h>
 #include <getopt.h>
+#include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "ansi_codes.h"
 
 #include "parse_args.h"
 
+static const int ANY_AMOUNT_ARG = -1;
+
+bool verify_arg_count(int argc, int min_argc, int max_argc, char *error) {
+	if (argc < min_argc) {
+		sprintf(error, ANSI_ESCAPE(ANSI_RED";"ANSI_HIGHLIGHT) "Too few arguments." ANSI_ESCAPE(ANSI_RESET));
+		return false;
+	} else if (argc > max_argc && max_argc != ANY_AMOUNT_ARG) {
+		sprintf(error, ANSI_ESCAPE(ANSI_RED";"ANSI_HIGHLIGHT) "Too many arguments." ANSI_ESCAPE(ANSI_RESET));
+		return false;
+	}
+
+	return true;
+}
+
 int parse_args(int argc, char **argv, struct Command *command) {
 	assert(command != NULL);
-
-	// If no command specified, default to status
-	if (argc == 1) {
-		command->type = COMMAND_STATUS;
-	}
 
 	/* --- Option parsing courtesy of systemd-localectl --- */
 	enum {
@@ -30,11 +44,12 @@ int parse_args(int argc, char **argv, struct Command *command) {
 	};
 
 	int c;
+	bool arg_ask_password = true;
 
 	assert(argc >= 0);
 	assert(argv);
 
-	while ((c = getopt_long(argc, argv, "hH:M:", options, NULL)) >= 0) {
+	while ((c = getopt_long(argc, argv, "h" /*"H:" "M:"*/, options, NULL)) >= 0) {
 		switch (c) {
 			case 'h':
 				command->type = COMMAND_HELP;
@@ -53,7 +68,7 @@ int parse_args(int argc, char **argv, struct Command *command) {
 				break;
 
 			case ARG_NO_ASK_PASSWORD:
-				// arg_ask_password = false;
+				arg_ask_password = false;
 				break;
 
 			case 'H':
@@ -67,9 +82,33 @@ int parse_args(int argc, char **argv, struct Command *command) {
 				break;
 
 			default:
+				sprintf(command->error, "localectl: invalid option -- '%c'", c);
 				return 1;
 		}
 	}
 
+	// If no command specified, default to status
+	if (argc == 1) {
+		command->type = COMMAND_STATUS;
+	}
+
+	argc -= optind + 1;
+	argv += optind;
+	optind = 0;
+
+	const char *command_name = argv[0];
+
+	if (strcmp("status", command_name) == 0) {
+		if (!verify_arg_count(argc, 0, 0,              command->error)) { return 1; }
+		command->type = COMMAND_STATUS;
+	} else if (strcmp("set-locale", command_name) == 0) {
+		if (!verify_arg_count(argc, 1, ANY_AMOUNT_ARG, command->error)) { return 1; }
+		command->type                    = COMMAND_SET_LOCALE;
+		command->set_locale.locales      = argv + 1;
+		command->set_locale.ask_password = arg_ask_password;
+	} else {
+		sprintf(command->error, ANSI_ESCAPE(ANSI_RED";"ANSI_HIGHLIGHT) "Unknown operation %s" ANSI_ESCAPE(ANSI_RESET), command_name);
+		return 1;
+	}
 	return 0;
 }

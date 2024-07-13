@@ -22,7 +22,7 @@ gnome = import('gnome')
 run_command('generate_introspection.sh', check: true)
 
 gdbus = gnome.gdbus_codegen(
-  'org.freedesktop.locale1',
+  'locale1',
   sources:          'org.freedesktop.locale1.xml',
   interface_prefix: 'org.freedesktop.',
   namespace:        'Localectl',

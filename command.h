@@ -1,12 +1,16 @@
-#ifndef LOCALECTL_COMMAND
-#define LOCALECTL_COMMAND
+#ifndef __LOCALECTL_COMMAND_H__
+#define __LOCALECTL_COMMAND_H__
+
+#include <stdbool.h>
+
+#include "locale1.h"
 
 #define COMMAND_STATUS                   0
 #define COMMAND_SET_LOCALE               1
 #define COMMAND_LIST_LOCALES             2
 #define COMMAND_SET_KEYMAP               3
 #define COMMAND_LIST_KEYMAPS             4
-#define COMMAND_SET_X11_KEYMAPS          5
+#define COMMAND_SET_X11_KEYMAP           5
 #define COMMAND_LIST_X11_KEYMAP_MODELS   6
 #define COMMAND_LIST_X11_KEYMAP_LAYOUTS  7
 #define COMMAND_LIST_X11_KEYMAP_VARIANTS 8
@@ -14,17 +18,11 @@
 #define COMMAND_HELP                     10
 #define COMMAND_VERSION                  11
 
-// struct Status {}; -- needs no supplemental data
+// struct CommandStatus {}; -- needs no supplemental data
 
 struct CommandSetLocale {
-	char * lang;
-	char * lc_ctype;
-	char * lc_numeric;
-	char * lc_time;
-	char * lc_collate;
-	char * lc_monetary;
-	char * lc_messages;
-	char * lc_all;
+	char **locales;
+	bool ask_password;
 };
 
 // struct Help    {}; -- needs no supplemental data
@@ -33,16 +31,17 @@ struct CommandSetLocale {
 struct Command {
 	int type;
 	union {
-		// struct Status           status; -- needs no supplemental data
-		struct CommandSetLocale    set_locale;
-		// struct Help             help; -- needs no supplemental data
-		// struct Version          version; -- needs no supplemental data
-		const char * error;
+		// struct CommandStatus  status;     -- needs no supplemental data
+		struct CommandSetLocale  set_locale;
+		// struct CommandHelp    help;       -- needs no supplemental data
+		// struct CommandVersion version;    -- needs no supplemental data
 	};
+	char error[64];
 };
 
-void command_status(void);
+void command_status(LocalectlLocale1 *proxy);
+void command_set_locale(LocalectlLocale1 *proxy, struct CommandSetLocale *set_locale);
 void command_help(void);
 void command_version(void);
 
-#endif // LOCALCTL_COMMAND
+#endif // __LOCALCTL_COMMAND_H__

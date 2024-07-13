@@ -1,8 +1,8 @@
-#ifndef LOCALECTL_PARSE_ARGS
-#define LOCALECTL_PARSE_ARGS
+#ifndef __LOCALECTL_PARSE_ARGS_H__
+#define __LOCALECTL_PARSE_ARGS_H__
 
 #include "command.h"
 
 int parse_args(int argc, char **argv, struct Command *command);
 
-#endif // LOCALECTL_PARSE_ARGS
+#endif // __LOCALECTL_PARSE_ARGS_H__
