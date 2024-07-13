@@ -113,6 +113,12 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	// Default to `status` if there is no command specified
+	if (optind == argc) {
+		command_status(proxy);
+		return 0;
+	}
+
 	argc -= optind + 1;
 	argv += optind;
 	optind = 0;
