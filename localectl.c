@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
 
 	int c;
 	bool arg_ask_password = true;
+	// bool arg_convert = true;
 
 	assert(argc >= 0);
 	assert(argv);
@@ -60,9 +61,13 @@ int main(int argc, char **argv) {
 				command_version();
 				return 0;
 
-			case ARG_NO_CONVERT:
-				// arg_convert = false;
-				break;
+			/*
+			 * We don't have the conversion map I guess?
+			 * > Error opening file /usr/share/openrc-settingsd/openrc-settingsd/kbd-model-map: No such file or directory
+			 */
+			// case ARG_NO_CONVERT:
+			// 	arg_convert = false;
+			// 	break;
 
 			case ARG_NO_PAGER:
 				// arg_pager_flags |= PAGER_DISABLE;
@@ -114,10 +119,21 @@ int main(int argc, char **argv) {
 
 	const char *command_name = argv[0];
 
-	       if (strcmp("status",       command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_status(proxy);
-	} else if (strcmp("set-locale",   command_name) == 0) { if (!verify_arg_count(argc, 1, ANY_AMOUNT_ARG)) { return 1; } command_set_locale(proxy, argv, arg_ask_password);
-	} else if (strcmp("list-locales", command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_locales();
-	} else if (strcmp("list-keymaps", command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_keymaps();
+	       if (strcmp("status",         command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_status(proxy);
+	} else if (strcmp("set-locale",     command_name) == 0) { if (!verify_arg_count(argc, 1, ANY_AMOUNT_ARG)) { return 1; } command_set_locale(proxy, argv + 1, arg_ask_password);
+	} else if (strcmp("list-locales",   command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_locales();
+	} else if (strcmp("set-keymap",     command_name) == 0) { if (!verify_arg_count(argc, 1, 2             )) { return 1; } command_set_keymap(proxy, argv[1], argv[2], /* arg_convert, */ arg_ask_password);
+	} else if (strcmp("list-keymaps",   command_name) == 0) { if (!verify_arg_count(argc, 0, 0             )) { return 1; } command_list_keymaps();
+	} else if (strcmp("set-x11-keymap", command_name) == 0) { if (!verify_arg_count(argc, 1, 4             )) { return 1; } command_set_x11_keymap(
+	                                                                                                                        	proxy,
+	                                                                                                                        	argv[1], 
+	                                                                                                                        	argc >= 2 ? argv[2] : "",
+	                                                                                                                        	argc >= 3 ? argv[3] : "",
+	                                                                                                                        	argc >= 4 ? argv[4] : "",
+	                                                                                                                        	// arg_convert,
+	                                                                                                                        	arg_ask_password
+	                                                                                                                        );
+	} else if (strcmp("help",           command_name) == 0) {                                                               command_help();
 	} else {
 		fprintf(stderr, ANSI_ESCAPE(ANSI_RED";"ANSI_HIGHLIGHT) "Unknown operation %s." ANSI_ESCAPE(ANSI_RESET) "\n", command_name);
 		return 1;

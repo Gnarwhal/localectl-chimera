@@ -6,6 +6,7 @@
 #include <sys/types.h>
 
 #include "ansi_codes.h"
+#include "locale1.h"
 #include "version.h"
 
 #include "command.h"
@@ -99,14 +100,8 @@ void command_status(LocalectlLocale1 *proxy) {
 }
 
 void command_set_locale(LocalectlLocale1 *proxy, char **locales, bool ask_password) {
-	char lang[32];
 	GError *error = NULL;
 
-	// If only given a single arg and it isn't already 'LANG=??', set it to LANG=${arg}
-	if (locales[1] == NULL && strncmp("LANG=", locales[0], strlen("LANG="))) {
-		snprintf(lang, 32, "LANG=%s", locales[0]);
-		locales[0] = lang;
-	}
 	localectl_locale1_call_set_locale_sync(
 		proxy,
 		locales,
@@ -121,7 +116,7 @@ void command_set_locale(LocalectlLocale1 *proxy, char **locales, bool ask_passwo
 			fprintf(stderr, ANSI_ESCAPE(ANSI_RED";"ANSI_HIGHLIGHT)"Failed to issue method call: Invalid Locale data."ANSI_ESCAPE(ANSI_RESET)"\n");
 		} else {
 			// Not sure what other errors it can give, but they're handled if they happen
-			fprintf(stderr, "Error setting locale: %s\n", error->message);
+			fprintf(stderr, "Error setting locale | %s\n", error->message);
 		}
 		g_object_unref(proxy);
 		g_error_free(error);
@@ -141,6 +136,29 @@ void command_list_locales(void) {
 	for_directory(LOCALE_DIRECTORY, false, print_locale);
 }
 
+void command_set_keymap(LocalectlLocale1 *proxy, const char *keymap, const char *toggle, /* bool convert, */ bool ask_password) {
+	GError *error = NULL;
+	
+	localectl_locale1_call_set_vconsole_keyboard_sync(
+		proxy,
+		keymap,
+		toggle ? toggle : "",
+		//convert,
+		false,
+		ask_password,
+		NULL,
+		&error
+	);
+	
+
+	if (error) {
+		fprintf(stderr, "Error setting keymap | %s\n", error->message);
+		g_object_unref(proxy);
+		g_error_free(error);
+		exit(1);
+	}
+}
+
 void print_keymap(const char *file_name) {
 	char stripped_file_name[128];
 	if (postfix_is(file_name, ".map")) {
@@ -155,6 +173,33 @@ void print_keymap(const char *file_name) {
 void command_list_keymaps(void) {
 	static const char *KEYMAP_DIRECTORY = "/usr/share/keymaps";
 	for_directory(KEYMAP_DIRECTORY, true, print_keymap);
+}
+
+void command_set_x11_keymap(LocalectlLocale1 *proxy, const char *layout, const char *model, const char *variant, const char *options, /* bool convert, */ bool ask_password) {
+	GError *error = NULL;
+
+	printf("%s;%s;%s;%s\n", layout, model, variant, options);
+	
+	localectl_locale1_call_set_x11_keyboard_sync(
+		proxy,
+		layout,
+		model,
+		variant,
+		options,
+		//convert,
+		false,
+		ask_password,
+		NULL,
+		&error
+	);
+	
+
+	if (error) {
+		fprintf(stderr, "Error setting x11 keymap | %s\n", error->message);
+		g_object_unref(proxy);
+		g_error_free(error);
+		exit(1);
+	}
 }
 
 void command_help(void) {
